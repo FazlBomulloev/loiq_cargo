@@ -1,21 +1,32 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import get_settings
 
 _settings = get_settings()
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+_MAX_BCRYPT_BYTES = 72
+
+
+def _prepare(raw: str) -> bytes:
+    """bcrypt считает только первые 72 байта — режем длинные."""
+    return raw.encode("utf-8")[:_MAX_BCRYPT_BYTES]
 
 
 def hash_password(raw: str) -> str:
-    return _pwd.hash(raw)
+    return bcrypt.hashpw(
+        _prepare(raw), bcrypt.gensalt(rounds=12)
+    ).decode("utf-8")
 
 
 def verify_password(raw: str, hashed: str) -> bool:
-    return _pwd.verify(raw, hashed)
+    try:
+        return bcrypt.checkpw(_prepare(raw), hashed.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
 
 
 def create_access_token(
