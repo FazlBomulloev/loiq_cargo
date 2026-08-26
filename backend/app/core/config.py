@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
 
-    cors_origins: list[str] = Field(default_factory=list)
+    cors_origins_raw: str = Field(default="", alias="cors_origins")
 
     owner_email: str = "owner@loik.local"
     owner_password: str = "owner_change_me"
@@ -41,12 +41,13 @@ class Settings(BaseSettings):
     tg_bot_token: str = ""
     tg_bot_username: str = "loik_bot"
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def _split_cors(cls, v):
-        if isinstance(v, str):
-            return [x.strip() for x in v.split(",") if x.strip()]
-        return v
+    @property
+    def cors_origins(self) -> list[str]:
+        return [
+            x.strip()
+            for x in self.cors_origins_raw.split(",")
+            if x.strip()
+        ]
 
     @property
     def sqlalchemy_dsn(self) -> str:
