@@ -20,42 +20,42 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-USER_ROLE = sa.Enum(
+USER_ROLE = postgresql.ENUM(
     "china_staff", "dushanbe_staff", "owner",
     name="user_role", create_type=False,
 )
-WAREHOUSE_CODE = sa.Enum(
+WAREHOUSE_CODE = postgresql.ENUM(
     "yiwu", "urumqi", "kashgar",
     name="warehouse_code", create_type=False,
 )
-GOODS_STATUS = sa.Enum(
+GOODS_STATUS = postgresql.ENUM(
     "in_china",
     "in_transit",
     "in_dushanbe",
     "delivered",
     name="goods_status", create_type=False,
 )
-SHIPMENT_STATUS = sa.Enum(
+SHIPMENT_STATUS = postgresql.ENUM(
     "draft", "in_transit", "arrived", "closed",
     name="shipment_status", create_type=False,
 )
-CHANGE_REQUEST_STATUS = sa.Enum(
+CHANGE_REQUEST_STATUS = postgresql.ENUM(
     "pending", "applied", "rejected",
     name="change_request_status", create_type=False,
 )
-CHANGE_REQUEST_ACTION = sa.Enum(
+CHANGE_REQUEST_ACTION = postgresql.ENUM(
     "edit_goods",
     "delete_goods",
     "other",
     name="change_request_action", create_type=False,
 )
-TG_STATUS = sa.Enum(
+TG_STATUS = postgresql.ENUM(
     "not_started",
     "pending",
     "verified",
     name="telegram_verification_status", create_type=False,
 )
-PAYMENT_STATUS = sa.Enum(
+PAYMENT_STATUS = postgresql.ENUM(
     "unpaid", "paid", "debt",
     name="payment_status", create_type=False,
 )
