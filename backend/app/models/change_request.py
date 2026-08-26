@@ -4,7 +4,6 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy import (
     BigInteger,
     DateTime,
-    Enum,
     ForeignKey,
     String,
 )
@@ -13,6 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdMixin, TimestampsMixin
 from app.models.enums import ChangeRequestAction, ChangeRequestStatus
+from app.models.pg_enum import pg_enum
 
 if TYPE_CHECKING:
     from app.models.goods import Goods
@@ -35,14 +35,14 @@ class ChangeRequest(IdMixin, TimestampsMixin, Base):
         index=True,
     )
     action: Mapped[ChangeRequestAction] = mapped_column(
-        Enum(ChangeRequestAction, name="change_request_action"),
+        pg_enum(ChangeRequestAction, name="change_request_action"),
         nullable=False,
     )
     payload: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=dict
     )
     status: Mapped[ChangeRequestStatus] = mapped_column(
-        Enum(ChangeRequestStatus, name="change_request_status"),
+        pg_enum(ChangeRequestStatus, name="change_request_status"),
         nullable=False,
         default=ChangeRequestStatus.PENDING,
         index=True,

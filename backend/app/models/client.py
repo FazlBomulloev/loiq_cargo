@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, Enum, String
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdMixin, TimestampsMixin
 from app.models.enums import TelegramVerificationStatus
+from app.models.pg_enum import pg_enum
 
 if TYPE_CHECKING:
     from app.models.goods import Goods
@@ -38,7 +39,7 @@ class Client(IdMixin, TimestampsMixin, Base):
     )
     telegram_status: Mapped[TelegramVerificationStatus] = (
         mapped_column(
-            Enum(
+            pg_enum(
                 TelegramVerificationStatus,
                 name="telegram_verification_status",
             ),

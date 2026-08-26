@@ -6,7 +6,6 @@ from sqlalchemy import (
     BigInteger,
     CheckConstraint,
     DateTime,
-    Enum,
     ForeignKey,
     Numeric,
     String,
@@ -15,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdMixin, TimestampsMixin
 from app.models.enums import GoodsStatus, PaymentStatus
+from app.models.pg_enum import pg_enum
 
 if TYPE_CHECKING:
     from app.models.client import Client
@@ -75,7 +75,7 @@ class Goods(IdMixin, TimestampsMixin, Base):
     )
 
     status: Mapped[GoodsStatus] = mapped_column(
-        Enum(GoodsStatus, name="goods_status"),
+        pg_enum(GoodsStatus, name="goods_status"),
         nullable=False,
         default=GoodsStatus.IN_CHINA,
         index=True,
@@ -104,7 +104,7 @@ class Goods(IdMixin, TimestampsMixin, Base):
         Numeric(12, 2), nullable=False, default=Decimal("0")
     )
     payment_status: Mapped[PaymentStatus] = mapped_column(
-        Enum(PaymentStatus, name="payment_status"),
+        pg_enum(PaymentStatus, name="payment_status"),
         nullable=False,
         default=PaymentStatus.UNPAID,
     )

@@ -1,11 +1,12 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum, Numeric, String
+from sqlalchemy import Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdMixin, TimestampsMixin
 from app.models.enums import WarehouseCode
+from app.models.pg_enum import pg_enum
 
 if TYPE_CHECKING:
     from app.models.goods import Goods
@@ -18,7 +19,7 @@ class Warehouse(IdMixin, TimestampsMixin, Base):
     __tablename__ = "warehouses"
 
     code: Mapped[WarehouseCode] = mapped_column(
-        Enum(WarehouseCode, name="warehouse_code"),
+        pg_enum(WarehouseCode, name="warehouse_code"),
         unique=True,
         nullable=False,
     )

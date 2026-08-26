@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from sqlalchemy import (
     BigInteger,
     DateTime,
-    Enum,
     ForeignKey,
     Numeric,
     String,
@@ -14,6 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdMixin, TimestampsMixin
 from app.models.enums import ShipmentStatus
+from app.models.pg_enum import pg_enum
 
 if TYPE_CHECKING:
     from app.models.goods import Goods
@@ -33,7 +33,7 @@ class Shipment(IdMixin, TimestampsMixin, Base):
         index=True,
     )
     status: Mapped[ShipmentStatus] = mapped_column(
-        Enum(ShipmentStatus, name="shipment_status"),
+        pg_enum(ShipmentStatus, name="shipment_status"),
         nullable=False,
         default=ShipmentStatus.DRAFT,
         index=True,
