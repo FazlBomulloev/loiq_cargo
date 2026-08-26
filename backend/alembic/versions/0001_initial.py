@@ -21,54 +21,92 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 USER_ROLE = sa.Enum(
-    "china_staff", "dushanbe_staff", "owner", name="user_role"
+    "china_staff", "dushanbe_staff", "owner",
+    name="user_role", create_type=False,
 )
 WAREHOUSE_CODE = sa.Enum(
-    "yiwu", "urumqi", "kashgar", name="warehouse_code"
+    "yiwu", "urumqi", "kashgar",
+    name="warehouse_code", create_type=False,
 )
 GOODS_STATUS = sa.Enum(
     "in_china",
     "in_transit",
     "in_dushanbe",
     "delivered",
-    name="goods_status",
+    name="goods_status", create_type=False,
 )
 SHIPMENT_STATUS = sa.Enum(
-    "draft", "in_transit", "arrived", "closed", name="shipment_status"
+    "draft", "in_transit", "arrived", "closed",
+    name="shipment_status", create_type=False,
 )
 CHANGE_REQUEST_STATUS = sa.Enum(
-    "pending", "applied", "rejected", name="change_request_status"
+    "pending", "applied", "rejected",
+    name="change_request_status", create_type=False,
 )
 CHANGE_REQUEST_ACTION = sa.Enum(
     "edit_goods",
     "delete_goods",
     "other",
-    name="change_request_action",
+    name="change_request_action", create_type=False,
 )
 TG_STATUS = sa.Enum(
     "not_started",
     "pending",
     "verified",
-    name="telegram_verification_status",
+    name="telegram_verification_status", create_type=False,
 )
 PAYMENT_STATUS = sa.Enum(
-    "unpaid", "paid", "debt", name="payment_status"
+    "unpaid", "paid", "debt",
+    name="payment_status", create_type=False,
 )
+
+
+def _create_enums(bind) -> None:
+    """Создаём enum-типы через сырой SQL с IF NOT EXISTS,
+    т.к. sa.Enum.create() не поддерживает такой синтаксис."""
+    defs = [
+        ("user_role", ["china_staff", "dushanbe_staff", "owner"]),
+        ("warehouse_code", ["yiwu", "urumqi", "kashgar"]),
+        (
+            "goods_status",
+            ["in_china", "in_transit", "in_dushanbe", "delivered"],
+        ),
+        (
+            "shipment_status",
+            ["draft", "in_transit", "arrived", "closed"],
+        ),
+        (
+            "change_request_status",
+            ["pending", "applied", "rejected"],
+        ),
+        (
+            "change_request_action",
+            ["edit_goods", "delete_goods", "other"],
+        ),
+        (
+            "telegram_verification_status",
+            ["not_started", "pending", "verified"],
+        ),
+        ("payment_status", ["unpaid", "paid", "debt"]),
+    ]
+    for name, values in defs:
+        exists = bind.execute(
+            sa.text(
+                "SELECT 1 FROM pg_type WHERE typname = :n"
+            ),
+            {"n": name},
+        ).scalar()
+        if exists:
+            continue
+        joined = ", ".join(f"'{v}'" for v in values)
+        bind.execute(
+            sa.text(f"CREATE TYPE {name} AS ENUM ({joined})")
+        )
 
 
 def upgrade() -> None:
     bind = op.get_bind()
-    for enum in (
-        USER_ROLE,
-        WAREHOUSE_CODE,
-        GOODS_STATUS,
-        SHIPMENT_STATUS,
-        CHANGE_REQUEST_STATUS,
-        CHANGE_REQUEST_ACTION,
-        TG_STATUS,
-        PAYMENT_STATUS,
-    ):
-        enum.create(bind, checkfirst=True)
+    _create_enums(bind)
 
     op.create_table(
         "warehouses",
@@ -799,14 +837,14 @@ def downgrade() -> None:
     op.drop_table("warehouses")
 
     bind = op.get_bind()
-    for enum in (
-        PAYMENT_STATUS,
-        TG_STATUS,
-        CHANGE_REQUEST_ACTION,
-        CHANGE_REQUEST_STATUS,
-        SHIPMENT_STATUS,
-        GOODS_STATUS,
-        WAREHOUSE_CODE,
-        USER_ROLE,
+    for name in (
+        "payment_status",
+        "telegram_verification_status",
+        "change_request_action",
+        "change_request_status",
+        "shipment_status",
+        "goods_status",
+        "warehouse_code",
+        "user_role",
     ):
-        enum.drop(bind, checkfirst=True)
+        bind.execute(sa.text(f"DROP TYPE IF EXISTS {name}"))
