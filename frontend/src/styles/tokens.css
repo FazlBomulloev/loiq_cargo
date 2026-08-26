@@ -1,0 +1,38 @@
+:root {
+  --bg-app: #F5EFDF;
+  --bg-elev: #FBF6EA;
+  --bg-card: #FDFAF3;
+  --bg-input: #FFFFFF;
+  --bg-hover: #F0E7D3;
+
+  --text-primary: #1F1A15;
+  --text-secondary: #4A4238;
+  --text-muted: #8A7F6E;
+  --text-faint: #B7AC98;
+
+  --line-strong: #D9CFB9;
+  --line: #E8DFCD;
+  --line-hair: #F0E9D6;
+
+  --accent: #B45A2B;
+  --accent-strong: #8F421D;
+  --accent-tint: #F1D6C4;
+
+  --good: #516F3A;
+  --good-tint: #E6EDDA;
+  --warn: #A76A16;
+  --warn-tint: #F6E7C8;
+  --crit: #A63A2A;
+  --crit-tint: #F1D9D2;
+  --info: #4C6580;
+  --info-tint: #E1E7EE;
+
+  --row-h: 44px;
+  --cell-y: 12px;
+  --cell-x: 16px;
+
+  --dur-fast: 120ms;
+  --dur-med: 200ms;
+  --dur-slow: 320ms;
+  --ease: cubic-bezier(.2,.6,.2,1);
+}

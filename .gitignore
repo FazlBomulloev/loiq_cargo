@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Node
+node_modules/
+.pnpm-store/
+.next/
+frontend/dist/
+
+# Docker
+*.pid
+
+# Alembic
+# (миграции коммитим; локальные бэкапы — нет)
+alembic/versions/*.pyc
+
+# Данные локальной разработки
+data/
+*.sqlite3
