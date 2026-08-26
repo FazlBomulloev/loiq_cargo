@@ -11,9 +11,7 @@ import {
   StaffMe,
   Warehouse,
 } from '@/lib/types'
-import {
-  fmtDensity, fmtKg, fmtM3, fmtSomoni, fmtUsd,
-} from '@/lib/format'
+import { fmtDensity, fmtSomoni, fmtUsd } from '@/lib/format'
 import { useToast } from '@/ui/Toast'
 import { useNavigate } from 'react-router-dom'
 

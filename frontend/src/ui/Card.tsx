@@ -1,7 +1,8 @@
 import { HTMLAttributes, ReactNode } from 'react'
 import { cx } from './utils'
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
+interface Props
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: ReactNode
   actions?: ReactNode
   footer?: ReactNode
