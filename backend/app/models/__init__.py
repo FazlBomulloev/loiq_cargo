@@ -2,9 +2,12 @@ from app.models.base import Base
 from app.models.change_request import ChangeRequest
 from app.models.client import Client
 from app.models.enums import (
+    ChangeRequestAction,
     ChangeRequestStatus,
     GoodsStatus,
+    PaymentStatus,
     ShipmentStatus,
+    TelegramVerificationStatus,
     UserRole,
     WarehouseCode,
 )
@@ -18,15 +21,18 @@ from app.models.warehouse import Warehouse
 __all__ = [
     "Base",
     "ChangeRequest",
+    "ChangeRequestAction",
     "ChangeRequestStatus",
     "Client",
     "Goods",
     "GoodsStatus",
+    "PaymentStatus",
     "Setting",
     "Shipment",
     "ShipmentStatus",
     "Tariff",
     "TariffRow",
+    "TelegramVerificationStatus",
     "User",
     "UserRole",
     "Warehouse",
