@@ -30,6 +30,11 @@ const NAV: readonly NavItem[] = [
     roles: ['owner'],
   },
   {
+    to: '/staff/calc',
+    label: 'Калькулятор',
+    roles: ['china_staff', 'dushanbe_staff', 'owner'],
+  },
+  {
     to: '/staff/goods',
     label: 'Товары',
     roles: ['china_staff', 'owner'],

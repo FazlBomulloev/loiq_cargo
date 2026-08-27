@@ -19,6 +19,7 @@ import { StaffWaybills } from '@/routes/staff/Waybills'
 import { StaffWaybillDetail } from '@/routes/staff/WaybillDetail'
 import { StaffDelivery } from '@/routes/staff/Delivery'
 import { StaffDeliveryHistory } from '@/routes/staff/DeliveryHistory'
+import { StaffCalc } from '@/routes/staff/Calc'
 import { StaffTariffs } from '@/routes/staff/Tariffs'
 import { StaffDebts } from '@/routes/staff/Debts'
 import { StaffUnclaimed } from '@/routes/staff/Unclaimed'
@@ -82,6 +83,15 @@ export const router = createBrowserRouter([
   {
     path: '/staff/dashboard',
     element: staffPage((c) => <StaffDashboard me={c.me} />),
+  },
+  {
+    path: '/staff/calc',
+    element: staffPage((c) => (
+      <StaffCalc
+        warehouses={c.warehouses}
+        activeWarehouse={c.activeWarehouse}
+      />
+    )),
   },
   {
     path: '/staff/goods',
