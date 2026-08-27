@@ -18,6 +18,7 @@ import { StaffShipments } from '@/routes/staff/Shipments'
 import { StaffWaybills } from '@/routes/staff/Waybills'
 import { StaffWaybillDetail } from '@/routes/staff/WaybillDetail'
 import { StaffDelivery } from '@/routes/staff/Delivery'
+import { StaffDeliveryHistory } from '@/routes/staff/DeliveryHistory'
 import { StaffTariffs } from '@/routes/staff/Tariffs'
 import { StaffDebts } from '@/routes/staff/Debts'
 import { StaffUnclaimed } from '@/routes/staff/Unclaimed'
@@ -133,6 +134,10 @@ export const router = createBrowserRouter([
   {
     path: '/staff/delivery',
     element: staffPage(() => <StaffDelivery />),
+  },
+  {
+    path: '/staff/delivery-history',
+    element: staffPage(() => <StaffDeliveryHistory />),
   },
   {
     path: '/staff/debts',

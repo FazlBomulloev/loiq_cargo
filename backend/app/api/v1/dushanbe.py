@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import case, func, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -25,6 +25,8 @@ from app.schemas.dushanbe import (
     DeliveryConfirmRequest,
     DeliveryConfirmResponse,
     DeliveryGoodsRow,
+    DeliveryHistoryResponse,
+    DeliveryHistoryRow,
     DeliveryPreview,
     ReceiveRequest,
     ReceiveResponse,
@@ -477,4 +479,144 @@ async def deliver(
         ),
         payment_status=payment_status.value,
         delivered_at=now,
+    )
+
+
+@router.get(
+    "/delivery/history",
+    response_model=DeliveryHistoryResponse,
+    summary="История выдач (фильтры + поиск по коду / имени / телефону)",
+)
+async def delivery_history(
+    period: Literal["7d", "30d", "90d", "all"] = Query(default="30d"),
+    payment: Literal["paid", "debt", "all"] = Query(default="all"),
+    q: str | None = Query(default=None, max_length=64),
+    session: AsyncSession = Depends(get_session),
+    principal: Principal = Depends(
+        require_staff(UserRole.DUSHANBE_STAFF, UserRole.OWNER)
+    ),
+) -> DeliveryHistoryResponse:
+    _guard_dushanbe(principal)
+
+    now = datetime.now(timezone.utc)
+    since: datetime | None
+    if period == "7d":
+        since = now - timedelta(days=7)
+    elif period == "30d":
+        since = now - timedelta(days=30)
+    elif period == "90d":
+        since = now - timedelta(days=90)
+    else:
+        since = None
+
+    stmt = (
+        select(Goods, Client)
+        .join(Client, Client.id == Goods.client_id)
+        .where(
+            Goods.status == GoodsStatus.DELIVERED,
+            Goods.delivered_at.is_not(None),
+        )
+        .order_by(Goods.delivered_at.desc())
+    )
+    if since is not None:
+        stmt = stmt.where(Goods.delivered_at >= since)
+    if payment == "paid":
+        stmt = stmt.where(Goods.payment_status == PaymentStatus.PAID)
+    elif payment == "debt":
+        stmt = stmt.where(Goods.payment_status == PaymentStatus.DEBT)
+    if q and q.strip():
+        pat = f"%{q.strip()}%"
+        stmt = stmt.where(
+            or_(
+                Client.client_code.ilike(pat),
+                Client.full_name.ilike(pat),
+                Client.phone.ilike(pat),
+            )
+        )
+
+    rate = await settings_service.get_exchange_rate(session)
+
+    # Группируем по (client_id, delivered_at, payment_status).
+    # При «полной выдаче» все goods одного клиента получают одинаковый
+    # delivered_at (до миллисекунды) — этого достаточно, чтобы объединить.
+    Bucket = tuple[int, datetime, str]
+    buckets: dict[Bucket, dict] = {}
+
+    for goods, client in (await session.execute(stmt)).all():
+        assert goods.delivered_at is not None
+        key: Bucket = (
+            client.id,
+            goods.delivered_at,
+            goods.payment_status.value,
+        )
+        b = buckets.setdefault(
+            key,
+            {
+                "client": client,
+                "count": 0,
+                "freight": Decimal("0.00"),
+                "storage": Decimal("0.00"),
+            },
+        )
+        freight_som = (
+            Decimal(goods.freight_cost_usd or 0) * rate
+        ).quantize(MONEY, rounding=ROUND_HALF_UP)
+        b["count"] = int(b["count"]) + 1
+        b["freight"] = Decimal(b["freight"]) + freight_som
+        b["storage"] = Decimal(b["storage"]) + Decimal(
+            goods.storage_fee_somoni or 0
+        )
+
+    rows: list[DeliveryHistoryRow] = []
+    total_pay = Decimal("0.00")
+    total_paid = Decimal("0.00")
+    total_debt = Decimal("0.00")
+
+    ordered = sorted(
+        buckets.items(), key=lambda kv: kv[0][1], reverse=True
+    )
+    for (cid, when, pay_status), b in ordered:
+        client: Client = b["client"]
+        pay = (
+            Decimal(b["freight"]) + Decimal(b["storage"])
+        ).quantize(MONEY, rounding=ROUND_HALF_UP)
+        total_pay += pay
+        if pay_status == PaymentStatus.PAID.value:
+            total_paid += pay
+        else:
+            total_debt += pay
+        rows.append(
+            DeliveryHistoryRow(
+                delivered_at=when,
+                client_id=cid,
+                client_code=client.client_code,
+                client_full_name=client.full_name,
+                phone=client.phone,
+                goods_count=int(b["count"]),
+                total_freight_somoni=Decimal(b["freight"]).quantize(
+                    MONEY, rounding=ROUND_HALF_UP
+                ),
+                total_storage_somoni=Decimal(b["storage"]).quantize(
+                    MONEY, rounding=ROUND_HALF_UP
+                ),
+                total_pay_somoni=pay,
+                payment_status=pay_status,
+            )
+        )
+
+    return DeliveryHistoryResponse(
+        period=period,
+        payment=payment,
+        q=(q.strip() if q else None) or None,
+        total_count=len(rows),
+        total_pay_somoni=total_pay.quantize(
+            MONEY, rounding=ROUND_HALF_UP
+        ),
+        total_paid_somoni=total_paid.quantize(
+            MONEY, rounding=ROUND_HALF_UP
+        ),
+        total_debt_somoni=total_debt.quantize(
+            MONEY, rounding=ROUND_HALF_UP
+        ),
+        rows=rows[:500],
     )

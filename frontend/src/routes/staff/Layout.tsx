@@ -60,6 +60,11 @@ const NAV: readonly NavItem[] = [
     roles: ['dushanbe_staff', 'owner'],
   },
   {
+    to: '/staff/delivery-history',
+    label: 'История выдач',
+    roles: ['dushanbe_staff', 'owner'],
+  },
+  {
     to: '/staff/debts',
     label: 'Долги',
     roles: ['dushanbe_staff', 'owner'],

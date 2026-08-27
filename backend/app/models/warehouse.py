@@ -29,10 +29,10 @@ class Warehouse(IdMixin, TimestampsMixin, Base):
     )
 
     truck_volume_m3: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), nullable=False, default=Decimal("30.00")
+        Numeric(10, 2), nullable=False, default=Decimal("110.00")
     )
     truck_weight_kg: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("20000.00")
+        Numeric(12, 2), nullable=False, default=Decimal("27000.00")
     )
     multiplier: Mapped[Decimal] = mapped_column(
         Numeric(6, 3), nullable=False, default=Decimal("1.000")

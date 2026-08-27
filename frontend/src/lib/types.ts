@@ -345,6 +345,33 @@ export interface DeliveryConfirmResponse {
   delivered_at: string
 }
 
+export type DeliveryHistoryPeriod = '7d' | '30d' | '90d' | 'all'
+export type DeliveryHistoryPayment = 'paid' | 'debt' | 'all'
+
+export interface DeliveryHistoryRow {
+  delivered_at: string
+  client_id: number
+  client_code: string
+  client_full_name: string
+  phone: string
+  goods_count: number
+  total_freight_somoni: string
+  total_storage_somoni: string
+  total_pay_somoni: string
+  payment_status: 'paid' | 'debt'
+}
+
+export interface DeliveryHistoryResponse {
+  period: DeliveryHistoryPeriod
+  payment: DeliveryHistoryPayment
+  q: string | null
+  total_count: number
+  total_pay_somoni: string
+  total_paid_somoni: string
+  total_debt_somoni: string
+  rows: DeliveryHistoryRow[]
+}
+
 export interface TariffRowFull {
   id: number
   density_from: string

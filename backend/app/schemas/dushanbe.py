@@ -105,3 +105,27 @@ class DeliveryConfirmResponse(BaseModel):
     total_paid_somoni: Decimal
     payment_status: Literal["paid", "debt"]
     delivered_at: datetime
+
+
+class DeliveryHistoryRow(BaseModel):
+    delivered_at: datetime
+    client_id: int
+    client_code: str
+    client_full_name: str
+    phone: str
+    goods_count: int
+    total_freight_somoni: Decimal
+    total_storage_somoni: Decimal
+    total_pay_somoni: Decimal
+    payment_status: Literal["paid", "debt"]
+
+
+class DeliveryHistoryResponse(BaseModel):
+    period: Literal["7d", "30d", "90d", "all"]
+    payment: Literal["paid", "debt", "all"]
+    q: str | None
+    total_count: int
+    total_pay_somoni: Decimal
+    total_debt_somoni: Decimal
+    total_paid_somoni: Decimal
+    rows: list[DeliveryHistoryRow]
