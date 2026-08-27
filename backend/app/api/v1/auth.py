@@ -1,12 +1,13 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import Principal, get_current_principal
 from app.core.config import get_settings
 from app.core.db import get_session
+from app.core.limiter import limiter
 from app.core.security import create_access_token, verify_password
 from app.models import Client, User
 from app.schemas.auth import (
@@ -34,7 +35,9 @@ def _bad_credentials() -> HTTPException:
     response_model=TokenResponse,
     summary="Вход сотрудника (email + пароль)",
 )
+@limiter.limit("10/minute")
 async def staff_login(
+    request: Request,
     body: StaffLoginRequest,
     session: AsyncSession = Depends(get_session),
 ) -> TokenResponse:
@@ -68,7 +71,9 @@ async def staff_login(
     response_model=TokenResponse,
     summary="Вход клиента (код клиента + пароль)",
 )
+@limiter.limit("10/minute")
 async def client_login(
+    request: Request,
     body: ClientLoginRequest,
     session: AsyncSession = Depends(get_session),
 ) -> TokenResponse:

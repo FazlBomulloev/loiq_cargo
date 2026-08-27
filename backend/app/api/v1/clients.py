@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import Principal, require_client_only
 from app.core.config import get_settings
 from app.core.db import get_session
+from app.core.limiter import limiter
 from app.core.security import create_access_token, hash_password
 from app.models import Client, Goods, GoodsStatus, Warehouse
 from app.models.enums import (
@@ -44,7 +45,9 @@ def _deep_link(code: str) -> str:
     status_code=status.HTTP_201_CREATED,
     summary="Регистрация клиента",
 )
+@limiter.limit("5/hour")
 async def register(
+    request: Request,
     body: ClientRegisterRequest,
     session: AsyncSession = Depends(get_session),
 ) -> ClientRegisterResponse:

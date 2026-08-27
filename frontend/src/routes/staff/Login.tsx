@@ -67,6 +67,11 @@ export default function StaffLogin() {
             >
               Войти
             </Button>
+            <div className="text-center text-xs
+              text-ink-muted mt-1">
+              Забыли пароль? Обратитесь к овнеру — восстановит
+              вручную из панели «Сотрудники».
+            </div>
           </form>
         </Card>
       </div>

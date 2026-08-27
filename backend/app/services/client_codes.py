@@ -1,13 +1,15 @@
 import re
 import secrets
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Client
 
 _PREFIX = "LQ-"
 _CODE_RE = re.compile(r"^LQ-(\d+)$")
+
+_CLIENT_CODE_LOCK_KEY = 738491  # произвольная константа, важна только уникальность
 
 
 def _next_number(current_max: int) -> str:
@@ -16,6 +18,12 @@ def _next_number(current_max: int) -> str:
 
 
 async def generate_client_code(session: AsyncSession) -> str:
+    # advisory-lock на время транзакции — параллельные регистрации
+    # не выдадут одинаковый номер.
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(:k)"),
+        {"k": _CLIENT_CODE_LOCK_KEY},
+    )
     codes = (
         await session.execute(
             select(Client.client_code).where(

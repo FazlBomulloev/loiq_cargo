@@ -76,10 +76,34 @@ export async function api<T>(
   const data = text ? JSON.parse(text) : null
 
   if (!res.ok) {
-    const msg =
-      (data && (data.detail || data.message)) ||
-      `Ошибка ${res.status}`
-    throw new ApiError(res.status, String(msg))
+    throw new ApiError(res.status, formatError(data, res.status))
   }
   return data as T
+}
+
+function formatError(data: unknown, status: number): string {
+  if (data && typeof data === 'object') {
+    const d = data as Record<string, unknown>
+    const detail = d.detail ?? d.message
+    if (typeof detail === 'string') return detail
+    if (Array.isArray(detail)) {
+      const parts = detail.map((it) => {
+        if (typeof it === 'string') return it
+        if (it && typeof it === 'object') {
+          const o = it as Record<string, unknown>
+          const msg = o.msg ?? o.message
+          if (typeof msg === 'string') return msg
+        }
+        try { return JSON.stringify(it) } catch { return String(it) }
+      })
+      return parts.join('; ')
+    }
+    if (detail && typeof detail === 'object') {
+      const o = detail as Record<string, unknown>
+      const msg = o.msg ?? o.message
+      if (typeof msg === 'string') return msg
+      try { return JSON.stringify(detail) } catch { /* fall through */ }
+    }
+  }
+  return `Ошибка ${status}`
 }

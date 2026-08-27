@@ -1,8 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Pill } from '@/ui/Pill'
-import { clearAuth } from '@/lib/api'
-import { ClientMe } from '@/lib/types'
+import { api, clearAuth } from '@/lib/api'
+import { ClientMe, VerifyCodeResponse } from '@/lib/types'
+import { useToast } from '@/ui/Toast'
 
 interface Props {
   me: ClientMe
@@ -11,10 +12,33 @@ interface Props {
 
 export function ClientLayout({ me, children }: Props) {
   const nav = useNavigate()
+  const toast = useToast()
+  const [loadingTg, setLoadingTg] = useState(false)
 
   function logout() {
     clearAuth()
     nav('/login', { replace: true })
+  }
+
+  async function openTgLink() {
+    if (me.telegram_status === 'verified') return
+    setLoadingTg(true)
+    try {
+      const r = await api<VerifyCodeResponse>(
+        '/clients/me/verify-code'
+      )
+      window.open(r.telegram_deep_link, '_blank', 'noopener')
+      toast.push({
+        kind: 'info',
+        text: 'Откройте Telegram и подтвердите привязку — ' +
+          'страница обновит статус автоматически.',
+      })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      toast.push({ kind: 'crit', text: msg })
+    } finally {
+      setLoadingTg(false)
+    }
   }
 
   const tgVariant =
@@ -24,6 +48,7 @@ export function ClientLayout({ me, children }: Props) {
     me.telegram_status === 'verified' ? 'Telegram привязан' :
       me.telegram_status === 'pending' ? 'Ожидаем Telegram' :
         'Telegram не привязан'
+  const tgIsBindable = me.telegram_status !== 'verified'
 
   return (
     <div className="min-h-screen bg-app text-ink-primary">
@@ -41,7 +66,21 @@ export function ClientLayout({ me, children }: Props) {
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <Pill variant={tgVariant}>{tgText}</Pill>
+            {tgIsBindable ? (
+              <button
+                type="button"
+                onClick={openTgLink}
+                disabled={loadingTg}
+                className="cursor-pointer disabled:opacity-60"
+                title="Открыть Telegram и подтвердить"
+              >
+                <Pill variant={tgVariant}>
+                  {tgText} — привязать
+                </Pill>
+              </button>
+            ) : (
+              <Pill variant={tgVariant}>{tgText}</Pill>
+            )}
             <div className="text-right">
               <div className="font-mono-nums text-sm
                 text-accent-strong">

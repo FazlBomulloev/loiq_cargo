@@ -12,6 +12,7 @@ export function PublicShell({ children, narrow = true }: Props) {
   const loc = useLocation()
   const onLogin = loc.pathname === '/login'
   const onStaffLogin = loc.pathname === '/staff/login'
+  const onRegister = loc.pathname.startsWith('/register')
 
   const hasToken = !!getToken()
   const kind = getKind()
@@ -71,7 +72,7 @@ export function PublicShell({ children, narrow = true }: Props) {
                     Сотрудникам
                   </Link>
                 )}
-                {!onStaffLogin && (
+                {!onStaffLogin && !onRegister && (
                   <Link
                     to="/register"
                     className="rounded-md bg-accent px-3 py-1.5
