@@ -168,3 +168,50 @@ async def bind_client(
         client_full_name=client.full_name,
         notified=notified,
     )
+
+
+@router.delete(
+    "/unclaimed/{goods_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить товар «без клиента» (только на складе КНР)",
+)
+async def delete_unclaimed(
+    goods_id: int,
+    session: AsyncSession = Depends(get_session),
+    _principal: Principal = Depends(
+        require_staff(UserRole.OWNER)
+    ),
+) -> None:
+    goods = (
+        await session.execute(
+            select(Goods)
+            .where(Goods.id == goods_id)
+            .with_for_update()
+        )
+    ).scalar_one_or_none()
+    if goods is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="товар не найден",
+        )
+    if not goods.is_unclaimed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="товар привязан к клиенту — удалять нельзя",
+        )
+    if goods.status != GoodsStatus.IN_CHINA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "удалять можно только товары на складе КНР "
+                "(до отправки)"
+            ),
+        )
+    if goods.shipment_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="товар уже в партии — сначала выньте из партии",
+        )
+    await session.delete(goods)
+    await session.commit()
+    log.info("товар %s (unclaimed) удалён овнером", goods_id)

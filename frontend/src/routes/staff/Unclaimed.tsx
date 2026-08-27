@@ -27,7 +27,30 @@ export function StaffUnclaimed({ me, warehouses }: Props) {
   const [rows, setRows] = useState<UnclaimedRow[]>([])
   const [loading, setLoading] = useState(false)
   const [bindingId, setBindingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deletingBusy, setDeletingBusy] = useState<number | null>(
+    null
+  )
   const toast = useToast()
+
+  async function deleteRow(id: number) {
+    setDeletingBusy(id)
+    try {
+      await api(`/unclaimed/${id}`, { method: 'DELETE' })
+      toast.push({
+        kind: 'ok',
+        text: `Товар #${id} удалён`,
+      })
+      setRows((xs) => xs.filter((r) => r.id !== id))
+      setDeletingId(null)
+    } catch (e) {
+      const msg = e instanceof ApiError ? e.message :
+        e instanceof Error ? e.message : String(e)
+      toast.push({ kind: 'crit', text: msg })
+    } finally {
+      setDeletingBusy(null)
+    }
+  }
 
   async function reload() {
     setLoading(true)
@@ -177,15 +200,39 @@ export function StaffUnclaimed({ me, warehouses }: Props) {
                 key: 'act',
                 header: '',
                 align: 'right',
-                cell: (r) => (
-                  <button
-                    onClick={() => setBindingId(r.id)}
-                    className="text-sm text-accent
-                      hover:text-accent-strong"
-                  >
-                    привязать →
-                  </button>
-                ),
+                cell: (r) => {
+                  const canDelete =
+                    r.status === 'in_china' &&
+                    !r.shipment_number
+                  return (
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => setBindingId(r.id)}
+                        className="text-sm text-accent
+                          hover:text-accent-strong"
+                      >
+                        привязать
+                      </button>
+                      <button
+                        onClick={() => setDeletingId(r.id)}
+                        disabled={!canDelete}
+                        className={
+                          canDelete
+                            ? 'text-sm text-crit hover:brightness-90'
+                            : 'text-sm text-ink-faint cursor-not-allowed'
+                        }
+                        title={
+                          canDelete
+                            ? 'Удалить товар без клиента'
+                            : 'Удалять можно только на складе КНР ' +
+                              'до отправки'
+                        }
+                      >
+                        удалить
+                      </button>
+                    </div>
+                  )
+                },
               },
             ]}
             rows={rows}
@@ -205,6 +252,79 @@ export function StaffUnclaimed({ me, warehouses }: Props) {
           }}
         />
       )}
+
+      {deletingId !== null && (
+        <ConfirmDeleteDialog
+          row={rows.find((r) => r.id === deletingId) ?? null}
+          busy={deletingBusy === deletingId}
+          onCancel={() => setDeletingId(null)}
+          onConfirm={() => deleteRow(deletingId)}
+        />
+      )}
+    </div>
+  )
+}
+
+function ConfirmDeleteDialog({
+  row, busy, onCancel, onConfirm,
+}: {
+  row: UnclaimedRow | null
+  busy: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  if (!row) return null
+  return (
+    <div
+      className="fixed inset-0 z-40 bg-ink-primary/30
+        flex items-center justify-center px-4"
+      onClick={onCancel}
+      role="presentation"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal
+        className="w-full max-w-md bg-card border border-line
+          rounded-md shadow-pop p-6 space-y-4"
+      >
+        <div>
+          <div className="label-caps">Удалить товар</div>
+          <h3 className="font-serif text-xl mt-1">
+            #{row.id} · {row.warehouse_name}
+          </h3>
+          <div className="text-sm text-ink-muted mt-1">
+            {row.description || 'без описания'} ·{' '}
+            {fmtKg(row.weight_kg)}, {fmtM3(row.volume_m3)}
+          </div>
+        </div>
+        <p className="text-sm text-ink-secondary">
+          Товар без клиента будет удалён навсегда. Это действие
+          нельзя отменить.
+        </p>
+        <div className="flex justify-end gap-2 border-t
+          border-line-hair pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="h-9 px-4 text-sm text-ink-secondary
+              hover:text-accent disabled:opacity-50"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="h-9 px-4 rounded-md text-sm font-medium
+              bg-crit text-card hover:brightness-95
+              disabled:opacity-50"
+          >
+            {busy ? 'Удаляем…' : 'Удалить'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
