@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     owner_password: str = "owner_change_me"
 
     tg_bot_token: str = ""
-    tg_bot_username: str = "loik_bot"
+    tg_bot_username: str = "loiq_cargobot"
 
     @property
     def cors_origins(self) -> list[str]:

@@ -72,12 +72,12 @@ export default function Login() {
               text-ink-muted -mt-1">
               Забыли пароль? Напишите в Telegram{' '}
               <a
-                href="https://t.me/loik_bot"
+                href="https://t.me/loiq_cargobot"
                 target="_blank"
                 rel="noreferrer"
                 className="text-accent"
               >
-                @loik_bot
+                @loiq_cargobot
               </a>
               , сотрудник восстановит.
             </div>
