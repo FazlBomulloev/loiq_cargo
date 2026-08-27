@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { PublicShell } from '@/ui/PublicShell'
 import { Card } from '@/ui/Card'
 import { Input } from '@/ui/Input'
@@ -67,13 +67,6 @@ export default function StaffLogin() {
             >
               Войти
             </Button>
-            <div className="text-center text-sm
-              text-ink-muted mt-2">
-              Клиент?{' '}
-              <Link to="/login" className="text-accent">
-                Вход клиента
-              </Link>
-            </div>
           </form>
         </Card>
       </div>

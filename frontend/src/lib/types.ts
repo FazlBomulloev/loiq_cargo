@@ -57,6 +57,9 @@ export interface ClientRegisterResponse {
   client_code: string
   telegram_verification_code: string
   telegram_deep_link: string
+  access_token: string
+  expires_in: number
+  principal_kind: 'client'
 }
 
 export interface VerifyCodeResponse {

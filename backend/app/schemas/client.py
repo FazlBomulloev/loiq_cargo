@@ -24,6 +24,9 @@ class ClientRegisterResponse(BaseModel):
     client_code: str
     telegram_verification_code: str
     telegram_deep_link: str
+    access_token: str
+    expires_in: int
+    principal_kind: Literal["client"] = "client"
 
 
 class VerifyCodeResponse(BaseModel):

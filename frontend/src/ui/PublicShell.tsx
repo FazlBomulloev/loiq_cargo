@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { ReactNode } from 'react'
+import { getKind, getToken } from '@/lib/api'
 import { cx } from './utils'
 
 interface Props {
@@ -9,7 +10,15 @@ interface Props {
 
 export function PublicShell({ children, narrow = true }: Props) {
   const loc = useLocation()
-  const onLogin = loc.pathname.startsWith('/login')
+  const onLogin = loc.pathname === '/login'
+  const onStaffLogin = loc.pathname === '/staff/login'
+
+  const hasToken = !!getToken()
+  const kind = getKind()
+  const cabinetHref =
+    hasToken && kind === 'staff' ? '/staff' :
+      hasToken && kind === 'client' ? '/app' : null
+
   return (
     <div className="min-h-screen bg-app text-ink-primary">
       <header className="border-b border-line bg-elev">
@@ -18,8 +27,10 @@ export function PublicShell({ children, narrow = true }: Props) {
           'px-6 h-14',
           narrow ? 'max-w-3xl' : 'max-w-6xl',
         )}>
-          <Link to="/" className="flex items-center gap-2
-            no-underline">
+          <Link
+            to={cabinetHref ?? '/'}
+            className="flex items-center gap-2 no-underline"
+          >
             <span className="font-serif text-xl font-semibold
               text-ink-primary">
               Loik
@@ -33,22 +44,45 @@ export function PublicShell({ children, narrow = true }: Props) {
             >
               Калькулятор
             </Link>
-            {!onLogin && (
+            {cabinetHref ? (
               <Link
-                to="/login"
+                to={cabinetHref}
                 className="text-ink-secondary hover:text-accent"
               >
-                Войти
+                В кабинет
               </Link>
+            ) : (
+              <>
+                {!onLogin && !onStaffLogin && (
+                  <Link
+                    to="/login"
+                    className="text-ink-secondary
+                      hover:text-accent"
+                  >
+                    Войти
+                  </Link>
+                )}
+                {!onStaffLogin && !onLogin && (
+                  <Link
+                    to="/staff/login"
+                    className="text-ink-secondary
+                      hover:text-accent"
+                  >
+                    Сотрудникам
+                  </Link>
+                )}
+                {!onStaffLogin && (
+                  <Link
+                    to="/register"
+                    className="rounded-md bg-accent px-3 py-1.5
+                      text-card text-sm font-medium
+                      hover:bg-accent-strong no-underline"
+                  >
+                    Стать клиентом
+                  </Link>
+                )}
+              </>
             )}
-            <Link
-              to="/register"
-              className="rounded-md bg-accent px-3 py-1.5
-                text-card text-sm font-medium
-                hover:bg-accent-strong no-underline"
-            >
-              Стать клиентом
-            </Link>
           </nav>
         </div>
       </header>

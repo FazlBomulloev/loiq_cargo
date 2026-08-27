@@ -4,7 +4,7 @@ import { PublicShell } from '@/ui/PublicShell'
 import { Card } from '@/ui/Card'
 import { Input } from '@/ui/Input'
 import { Button } from '@/ui/Button'
-import { api } from '@/lib/api'
+import { api, saveToken } from '@/lib/api'
 import { ClientRegisterResponse } from '@/lib/types'
 import { useToast } from '@/ui/Toast'
 
@@ -39,6 +39,7 @@ export default function Register() {
           },
         }
       )
+      saveToken(r.access_token, r.principal_kind)
       sessionStorage.setItem(
         'loik.register',
         JSON.stringify(r)

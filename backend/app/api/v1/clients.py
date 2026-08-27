@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import Principal, require_client_only
 from app.core.config import get_settings
 from app.core.db import get_session
-from app.core.security import hash_password
+from app.core.security import create_access_token, hash_password
 from app.models import Client, Goods, GoodsStatus, Warehouse
 from app.models.enums import (
     PaymentStatus,
@@ -68,12 +68,20 @@ async def register(
     )
     session.add(client)
     await session.commit()
+    await session.refresh(client)
+
+    token = create_access_token(
+        subject=f"client:{client.id}",
+        extra={"client_code": client.client_code},
+    )
 
     log.info("зарегистрирован клиент %s", code)
     return ClientRegisterResponse(
         client_code=code,
         telegram_verification_code=tg_code,
         telegram_deep_link=_deep_link(tg_code),
+        access_token=token,
+        expires_in=_settings.jwt_access_ttl_min * 60,
     )
 
 
