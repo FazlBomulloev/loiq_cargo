@@ -382,8 +382,8 @@ function RequestDrawer({
           )}
 
           {request.action === 'delete_goods' && (
-            <div className="rounded-md border-l-4 border-crit
-              bg-crit-tint/40 p-4 text-sm">
+            <div className="rounded-md border border-line
+              bg-crit-tint/40 p-4 text-sm text-crit">
               Товар будет удалён из системы. Действие
               необратимо и возможно только пока товар
               на складе Китая.

@@ -251,7 +251,7 @@ export function StaffReceive({
 
           {lookupState === 'not-found' && (
             <div className="flex items-start gap-2 rounded-md
-              border-l-4 border-warn bg-warn-tint/40 p-3
+              border border-line bg-warn-tint/40 p-3
               text-sm">
               <Pill variant="warn" showDot={false}>
                 код не найден
