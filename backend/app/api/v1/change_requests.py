@@ -296,11 +296,16 @@ async def _apply_edit_goods(
     if tariff is not None and tariff.rows:
         row = tariff_svc.pick_row(list(tariff.rows), density)
         if row is not None:
-            goods.rate_usd_per_kg = row.rate_usd_per_kg
+            weight = Decimal(goods.weight_kg)
+            volume = Decimal(goods.volume_m3)
             goods.freight_cost_usd = (
-                row.rate_usd_per_kg
-                * Decimal(goods.weight_kg)
-            ).quantize(MONEY, rounding=ROUND_HALF_UP)
+                tariff_svc.compute_freight_usd(row, weight, volume)
+            )
+            goods.rate_usd_per_kg = (
+                tariff_svc.effective_rate_per_kg(
+                    row, weight, volume
+                )
+            )
 
 
 async def _apply_delete_goods(

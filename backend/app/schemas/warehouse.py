@@ -13,6 +13,7 @@ class WarehouseOut(BaseModel):
     truck_volume_m3: Decimal
     truck_weight_kg: Decimal
     multiplier: Decimal
+    address: str | None = None
 
 
 class TariffRowOut(BaseModel):
@@ -20,7 +21,8 @@ class TariffRowOut(BaseModel):
 
     density_from: Decimal
     density_to: Decimal | None
-    rate_usd_per_kg: Decimal
+    rate_usd_per_kg: Decimal | None
+    rate_usd_per_m3: Decimal | None
 
 
 class TariffOut(BaseModel):

@@ -34,6 +34,7 @@ class WaybillGoodsRow(BaseModel):
     is_missing: bool
     is_unclaimed: bool
     received_at: datetime
+    dushanbe_note: str | None = None
 
 
 class WaybillDetail(BaseModel):
@@ -51,8 +52,17 @@ class WaybillDetail(BaseModel):
     goods: list[WaybillGoodsRow]
 
 
+class ReceiveItem(BaseModel):
+    id: int
+    volume_m3: Decimal | None = Field(
+        default=None, gt=0, decimal_places=3
+    )
+    note: str | None = Field(default=None, max_length=512)
+
+
 class ReceiveRequest(BaseModel):
     received_ids: list[int] = Field(default_factory=list)
+    items: list[ReceiveItem] = Field(default_factory=list)
 
 
 class ReceiveResponse(BaseModel):

@@ -178,6 +178,7 @@ def _waybill_detail(sh: Shipment, wh: Warehouse) -> WaybillDetail:
                 is_missing=g.is_missing,
                 is_unclaimed=g.is_unclaimed,
                 received_at=g.received_at,
+                dushanbe_note=g.dushanbe_note,
             )
         )
     return WaybillDetail(
@@ -249,7 +250,10 @@ async def receive_waybill(
         )
 
     goods_by_id = {g.id: g for g in sh.goods}
-    received = {int(x) for x in body.received_ids}
+    items_by_id = {int(item.id): item for item in body.items}
+    received = {int(x) for x in body.received_ids} | set(
+        items_by_id.keys()
+    )
     unknown = received - set(goods_by_id.keys())
     if unknown:
         raise HTTPException(
@@ -271,6 +275,20 @@ async def receive_waybill(
             g.status = GoodsStatus.IN_DUSHANBE
             g.arrived_in_dushanbe_at = now
             g.is_missing = False
+            item = items_by_id.get(g.id)
+            if item is not None:
+                if item.volume_m3 is not None:
+                    g.volume_m3 = item.volume_m3
+                    if Decimal(g.weight_kg) > 0:
+                        g.density_kg_m3 = (
+                            Decimal(g.weight_kg)
+                            / Decimal(item.volume_m3)
+                        ).quantize(
+                            Decimal("1"), rounding=ROUND_HALF_UP
+                        )
+                if item.note is not None:
+                    txt = item.note.strip()
+                    g.dushanbe_note = txt or None
             received_count += 1
             notify_targets.append(g)
         else:

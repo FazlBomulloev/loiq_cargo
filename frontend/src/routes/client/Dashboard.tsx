@@ -14,6 +14,7 @@ import {
 } from '@/lib/format'
 import { statusLabel, statusVariant } from '@/lib/statusText'
 import { GoodsDrawer } from './GoodsDrawer'
+import { ClientWarehousesInfo } from './WarehousesInfo'
 import { useToast } from '@/ui/Toast'
 
 interface Props {
@@ -269,6 +270,8 @@ export function ClientDashboard({ me: _me }: Props) {
           )}
         </Card>
       )}
+
+      <ClientWarehousesInfo />
 
       <GoodsDrawer
         item={selected}

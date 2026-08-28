@@ -17,18 +17,27 @@ interface Props {
   warehouses: Warehouse[]
 }
 
+type EditorMode = 'per_kg' | 'per_m3'
+
 interface EditorRow {
   density_from: string
   density_to: string
-  rate_usd_per_kg: string
+  mode: EditorMode
+  rate: string
 }
 
 const EMPTY_ROWS: EditorRow[] = [
-  { density_from: '250', density_to: '', rate_usd_per_kg: '0.70' },
-  { density_from: '150', density_to: '250', rate_usd_per_kg: '1.30' },
-  { density_from: '100', density_to: '150', rate_usd_per_kg: '2.50' },
-  { density_from: '50', density_to: '100', rate_usd_per_kg: '3.00' },
-  { density_from: '0', density_to: '50', rate_usd_per_kg: '4.00' },
+  { density_from: '1001', density_to: '',    mode: 'per_kg', rate: '0.50' },
+  { density_from: '901',  density_to: '1001', mode: 'per_kg', rate: '0.55' },
+  { density_from: '801',  density_to: '901',  mode: 'per_kg', rate: '0.60' },
+  { density_from: '701',  density_to: '801',  mode: 'per_kg', rate: '0.65' },
+  { density_from: '601',  density_to: '701',  mode: 'per_kg', rate: '0.70' },
+  { density_from: '501',  density_to: '601',  mode: 'per_kg', rate: '0.75' },
+  { density_from: '401',  density_to: '501',  mode: 'per_kg', rate: '0.80' },
+  { density_from: '301',  density_to: '401',  mode: 'per_kg', rate: '0.85' },
+  { density_from: '251',  density_to: '301',  mode: 'per_kg', rate: '0.90' },
+  { density_from: '201',  density_to: '251',  mode: 'per_kg', rate: '0.95' },
+  { density_from: '0',    density_to: '201',  mode: 'per_m3', rate: '195.00' },
 ]
 
 export function StaffTariffs({ me, warehouses }: Props) {
@@ -88,11 +97,20 @@ export function StaffTariffs({ me, warehouses }: Props) {
       setEditorId(t.id)
       setEditorNote(t.note ?? '')
       setEditorRows(
-        t.rows.map((r) => ({
-          density_from: String(r.density_from),
-          density_to: r.density_to ?? '',
-          rate_usd_per_kg: String(r.rate_usd_per_kg),
-        }))
+        t.rows.map((r) => {
+          const mode: EditorMode =
+            r.rate_usd_per_m3 != null ? 'per_m3' : 'per_kg'
+          const rate =
+            mode === 'per_m3'
+              ? String(r.rate_usd_per_m3 ?? '')
+              : String(r.rate_usd_per_kg ?? '')
+          return {
+            density_from: String(r.density_from),
+            density_to: r.density_to ?? '',
+            mode,
+            rate,
+          }
+        })
       )
     }
   }
@@ -114,7 +132,7 @@ export function StaffTariffs({ me, warehouses }: Props) {
   function addRow() {
     setEditorRows((rows) => [
       ...rows,
-      { density_from: '', density_to: '', rate_usd_per_kg: '' },
+      { density_from: '', density_to: '', mode: 'per_kg', rate: '' },
     ])
   }
 
@@ -128,7 +146,7 @@ export function StaffTariffs({ me, warehouses }: Props) {
     for (const r of editorRows) {
       const df = Number(r.density_from)
       const dt = r.density_to === '' ? null : Number(r.density_to)
-      const rate = Number(r.rate_usd_per_kg)
+      const rate = Number(r.rate)
       if (!Number.isFinite(df) || df < 0) {
         toast.push({
           kind: 'crit',
@@ -153,7 +171,8 @@ export function StaffTariffs({ me, warehouses }: Props) {
       parsed.push({
         density_from: df,
         density_to: dt,
-        rate_usd_per_kg: rate,
+        rate_usd_per_kg: r.mode === 'per_kg' ? rate : null,
+        rate_usd_per_m3: r.mode === 'per_m3' ? rate : null,
       })
     }
     setSaving(true)
@@ -402,23 +421,37 @@ function TariffTable({ tariff }: { tariff: TariffFull }) {
               Плотность, кг/м³
             </th>
             <th className="label-caps px-4 py-2 text-right">
-              Ставка, $/кг
+              Ставка
+            </th>
+            <th className="label-caps px-4 py-2 text-right">
+              Ед.
             </th>
           </tr>
         </thead>
         <tbody>
-          {tariff.rows.map((r) => (
-            <tr key={r.id} className="border-b border-line-hair">
-              <td className="px-4 py-2 font-mono-nums">
-                {r.density_to
-                  ? `${r.density_from} – ${r.density_to}`
-                  : `≥ ${r.density_from}`}
-              </td>
-              <td className="px-4 py-2 text-right font-mono-nums">
-                {Number(r.rate_usd_per_kg).toFixed(4)}
-              </td>
-            </tr>
-          ))}
+          {tariff.rows.map((r) => {
+            const isM3 = r.rate_usd_per_m3 != null
+            const rate = isM3
+              ? Number(r.rate_usd_per_m3)
+              : Number(r.rate_usd_per_kg)
+            const rangeFrom = Number(r.density_from)
+            const rangeTo = r.density_to ? Number(r.density_to) : null
+            return (
+              <tr key={r.id} className="border-b border-line-hair">
+                <td className="px-4 py-2 font-mono-nums">
+                  {rangeTo
+                    ? `${rangeFrom} – ${rangeTo - 1}`
+                    : `≥ ${rangeFrom}`}
+                </td>
+                <td className="px-4 py-2 text-right font-mono-nums">
+                  ${rate.toFixed(isM3 ? 2 : 4)}
+                </td>
+                <td className="px-4 py-2 text-right text-ink-muted">
+                  {isM3 ? '/м³' : '/кг'}
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -483,7 +516,10 @@ function TariffEditor({
                   Плотн. до
                 </th>
                 <th className="label-caps px-3 py-2 text-left">
-                  Ставка, $/кг
+                  Режим
+                </th>
+                <th className="label-caps px-3 py-2 text-left">
+                  Ставка
                 </th>
                 <th></th>
               </tr>
@@ -521,12 +557,25 @@ function TariffEditor({
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <input
-                      value={r.rate_usd_per_kg}
+                    <select
+                      value={r.mode}
                       onChange={(e) =>
                         onRowChange(
-                          i, 'rate_usd_per_kg', e.target.value,
+                          i, 'mode', e.target.value as EditorMode,
                         )
+                      }
+                      className="h-8 rounded-md border border-line
+                        bg-input px-2 text-sm"
+                    >
+                      <option value="per_kg">$/кг</option>
+                      <option value="per_m3">$/м³</option>
+                    </select>
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      value={r.rate}
+                      onChange={(e) =>
+                        onRowChange(i, 'rate', e.target.value)
                       }
                       inputMode="decimal"
                       className="w-28 h-8 rounded-md border

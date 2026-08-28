@@ -24,8 +24,8 @@ export function PublicShell({ children, narrow = true }: Props) {
     <div className="min-h-screen bg-app text-ink-primary">
       <header className="border-b border-line bg-elev">
         <div className={cx(
-          'mx-auto flex items-center justify-between',
-          'px-6 h-14',
+          'mx-auto flex flex-wrap items-center justify-between',
+          'px-4 sm:px-6 gap-y-2 gap-x-4 py-2 min-h-14',
           narrow ? 'max-w-3xl' : 'max-w-6xl',
         )}>
           <Link
@@ -36,9 +36,12 @@ export function PublicShell({ children, narrow = true }: Props) {
               text-ink-primary">
               Loik
             </span>
-            <span className="label-caps">Cargo</span>
+            <span className="label-caps hidden xs:inline">
+              Cargo
+            </span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="flex items-center flex-wrap
+            gap-x-3 gap-y-2 sm:gap-4 text-sm justify-end">
             <Link
               to="/"
               className="text-ink-secondary hover:text-accent"
@@ -88,7 +91,7 @@ export function PublicShell({ children, narrow = true }: Props) {
         </div>
       </header>
       <main className={cx(
-        'mx-auto px-6 py-10',
+        'mx-auto px-4 sm:px-6 py-6 sm:py-10',
         narrow ? 'max-w-3xl' : 'max-w-6xl',
       )}>
         {children}

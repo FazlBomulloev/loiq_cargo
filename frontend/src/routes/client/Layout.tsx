@@ -53,8 +53,9 @@ export function ClientLayout({ me, children }: Props) {
   return (
     <div className="min-h-screen bg-app text-ink-primary">
       <header className="border-b border-line bg-elev">
-        <div className="mx-auto flex items-center
-          justify-between px-6 h-14 max-w-6xl">
+        <div className="mx-auto flex flex-wrap items-center
+          justify-between px-4 sm:px-6 py-2 gap-y-2 gap-x-4
+          min-h-14 max-w-6xl">
           <div className="flex items-center gap-3">
             <Link to="/app" className="flex items-center gap-2
               no-underline">
@@ -62,10 +63,13 @@ export function ClientLayout({ me, children }: Props) {
                 font-semibold text-ink-primary">
                 Loik
               </span>
-              <span className="label-caps">Кабинет</span>
+              <span className="label-caps hidden xs:inline">
+                Кабинет
+              </span>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center flex-wrap justify-end
+            gap-x-3 gap-y-2 sm:gap-4">
             {tgIsBindable ? (
               <button
                 type="button"
@@ -86,7 +90,8 @@ export function ClientLayout({ me, children }: Props) {
                 text-accent-strong">
                 {me.client_code}
               </div>
-              <div className="text-xs text-ink-muted">
+              <div className="text-xs text-ink-muted truncate
+                max-w-[22ch]">
                 {me.full_name}
               </div>
             </div>
@@ -100,7 +105,7 @@ export function ClientLayout({ me, children }: Props) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
         {children}
       </main>
     </div>

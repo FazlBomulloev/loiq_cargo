@@ -93,6 +93,9 @@ class Goods(IdMixin, TimestampsMixin, Base):
     arrived_in_dushanbe_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    dushanbe_note: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
     delivered_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

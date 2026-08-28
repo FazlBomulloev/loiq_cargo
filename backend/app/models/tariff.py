@@ -58,8 +58,15 @@ class TariffRow(IdMixin, Base):
             name="density_range_valid",
         ),
         CheckConstraint(
-            "rate_usd_per_kg > 0",
+            "(rate_usd_per_kg IS NOT NULL AND rate_usd_per_kg > 0)"
+            " OR (rate_usd_per_m3 IS NOT NULL"
+            "     AND rate_usd_per_m3 > 0)",
             name="rate_positive",
+        ),
+        CheckConstraint(
+            "NOT (rate_usd_per_kg IS NOT NULL"
+            "     AND rate_usd_per_m3 IS NOT NULL)",
+            name="rate_single_mode",
         ),
     )
 
@@ -75,8 +82,11 @@ class TariffRow(IdMixin, Base):
     density_to: Mapped[Decimal | None] = mapped_column(
         Numeric(8, 2), nullable=True
     )
-    rate_usd_per_kg: Mapped[Decimal] = mapped_column(
-        Numeric(8, 4), nullable=False
+    rate_usd_per_kg: Mapped[Decimal | None] = mapped_column(
+        Numeric(8, 4), nullable=True
+    )
+    rate_usd_per_m3: Mapped[Decimal | None] = mapped_column(
+        Numeric(8, 4), nullable=True
     )
 
     tariff: Mapped["Tariff"] = relationship(back_populates="rows")

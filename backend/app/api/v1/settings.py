@@ -225,6 +225,9 @@ async def update_warehouse(
     if body.name is not None:
         wh.name = body.name.strip()
         updated = True
+    if body.address is not None:
+        wh.address = body.address.strip() or None
+        updated = True
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

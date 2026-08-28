@@ -66,6 +66,7 @@ export function StaffSettings({ me, warehouses }: Props) {
       truck_volume_m3: string
       truck_weight_kg: string
       multiplier: string
+      address: string
     }
   >>({})
   const [whSaving, setWhSaving] = useState<number | null>(null)
@@ -103,6 +104,7 @@ export function StaffSettings({ me, warehouses }: Props) {
         truck_volume_m3: string
         truck_weight_kg: string
         multiplier: string
+        address: string
       }
     > = {}
     for (const w of warehouses) {
@@ -111,6 +113,7 @@ export function StaffSettings({ me, warehouses }: Props) {
         truck_volume_m3: w.truck_volume_m3,
         truck_weight_kg: w.truck_weight_kg,
         multiplier: w.multiplier,
+        address: w.address ?? '',
       }
     }
     setWhForm(form)
@@ -180,6 +183,9 @@ export function StaffSettings({ me, warehouses }: Props) {
     if (form.multiplier !== w.multiplier) {
       payload.multiplier = Number(form.multiplier)
     }
+    if ((form.address ?? '') !== (w.address ?? '')) {
+      payload.address = form.address
+    }
     if (Object.keys(payload).length === 0) {
       toast.push({
         kind: 'info', text: 'Ничего не изменилось',
@@ -202,6 +208,7 @@ export function StaffSettings({ me, warehouses }: Props) {
           truck_volume_m3: updated.truck_volume_m3,
           truck_weight_kg: updated.truck_weight_kg,
           multiplier: updated.multiplier,
+          address: updated.address ?? '',
         },
       }))
       toast.push({
@@ -325,7 +332,8 @@ export function StaffSettings({ me, warehouses }: Props) {
               form.name !== w.name ||
               form.truck_volume_m3 !== w.truck_volume_m3 ||
               form.truck_weight_kg !== w.truck_weight_kg ||
-              form.multiplier !== w.multiplier
+              form.multiplier !== w.multiplier ||
+              (form.address ?? '') !== (w.address ?? '')
             return (
               <Card
                 key={w.id}
@@ -403,6 +411,29 @@ export function StaffSettings({ me, warehouses }: Props) {
                     }
                     hint="применяется к тарифной сетке"
                   />
+                  <div className="sm:col-span-2 md:col-span-4">
+                    <label className="label-caps mb-1 block">
+                      Адрес (виден клиентам)
+                    </label>
+                    <textarea
+                      value={form.address}
+                      onChange={(e) =>
+                        setWhForm((p) => ({
+                          ...p,
+                          [w.id]: {
+                            ...p[w.id],
+                            address: e.target.value,
+                          },
+                        }))
+                      }
+                      rows={2}
+                      placeholder="город, район, улица, дом,
+                        ориентир, контакт"
+                      className="w-full rounded-md border
+                        border-line bg-input px-3 py-2 text-sm
+                        focus:outline-none focus:shadow-focus"
+                    />
+                  </div>
                 </div>
               </Card>
             )

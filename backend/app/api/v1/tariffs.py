@@ -37,6 +37,7 @@ def _to_full(tariff: Tariff, warehouse: Warehouse) -> TariffFull:
                 density_from=r.density_from,
                 density_to=r.density_to,
                 rate_usd_per_kg=r.rate_usd_per_kg,
+                rate_usd_per_m3=r.rate_usd_per_m3,
             )
             for r in tariff.rows
         ],
@@ -151,6 +152,7 @@ async def create_tariff(
                 density_from=row.density_from,
                 density_to=row.density_to,
                 rate_usd_per_kg=row.rate_usd_per_kg,
+                rate_usd_per_m3=row.rate_usd_per_m3,
             )
         )
     await session.commit()
@@ -215,6 +217,7 @@ async def update_tariff(
                 density_from=row.density_from,
                 density_to=row.density_to,
                 rate_usd_per_kg=row.rate_usd_per_kg,
+                rate_usd_per_m3=row.rate_usd_per_m3,
             )
         )
     await session.commit()

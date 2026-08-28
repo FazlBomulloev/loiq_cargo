@@ -50,6 +50,10 @@ export function fmtRate(n: number | string): string {
   return `${fmtUsd(n)}/кг`
 }
 
+export function fmtRateM3(n: number | string): string {
+  return `${fmtUsd(n)}/м³`
+}
+
 const MONTHS = [
   'янв', 'фев', 'мар', 'апр', 'май', 'июн',
   'июл', 'авг', 'сен', 'окт', 'ноя', 'дек',

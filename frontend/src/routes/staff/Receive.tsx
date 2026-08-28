@@ -324,7 +324,12 @@ export function StaffReceive({
               <Row label="Плотность"
                 value={fmtDensity(quote.density_kg_m3)} />
               <Row label="Ставка"
-                value={`${fmtUsd(quote.rate_usd_per_kg)}/кг`} />
+                value={
+                  quote.mode === 'per_m3' &&
+                  quote.rate_usd_per_m3 != null
+                    ? `${fmtUsd(quote.rate_usd_per_m3)}/м³`
+                    : `${fmtUsd(quote.rate_usd_per_kg)}/кг`
+                } />
               <Row
                 label="Фрахт"
                 value={fmtSomoni(quote.freight_somoni)}

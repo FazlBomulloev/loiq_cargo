@@ -37,3 +37,4 @@ class WarehouseUpdateRequest(BaseModel):
         default=None, gt=0, decimal_places=3
     )
     name: str | None = Field(default=None, min_length=1, max_length=64)
+    address: str | None = Field(default=None, max_length=512)

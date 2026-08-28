@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +18,9 @@ class CalcResponse(BaseModel):
     density_kg_m3: Decimal
     density_from: Decimal
     density_to: Decimal | None
+    mode: Literal["per_kg", "per_m3"]
     rate_usd_per_kg: Decimal
+    rate_usd_per_m3: Decimal | None
     freight_usd: Decimal
     freight_somoni: Decimal
     exchange_rate: Decimal

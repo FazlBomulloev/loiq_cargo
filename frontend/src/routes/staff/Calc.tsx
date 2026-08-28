@@ -6,7 +6,7 @@ import { Button } from '@/ui/Button'
 import { api } from '@/lib/api'
 import { CalcResponse, Warehouse } from '@/lib/types'
 import {
-  fmtDensity, fmtRate, fmtSomoni, fmtUsd,
+  fmtDensity, fmtRate, fmtRateM3, fmtSomoni, fmtUsd,
 } from '@/lib/format'
 import { useToast } from '@/ui/Toast'
 
@@ -159,7 +159,19 @@ export function StaffCalc({
               />
               <Row
                 label="Ставка"
-                value={fmtRate(result.rate_usd_per_kg)}
+                value={
+                  result.mode === 'per_m3' &&
+                  result.rate_usd_per_m3 != null
+                    ? fmtRateM3(result.rate_usd_per_m3)
+                    : fmtRate(result.rate_usd_per_kg)
+                }
+                hint={
+                  result.mode === 'per_m3'
+                    ? `лёгкий ≤ ${result.density_to
+                        ? Number(result.density_to) - 1
+                        : 200} кг/м³ — считаем за м³`
+                    : undefined
+                }
               />
               <Row
                 label="Стоимость"

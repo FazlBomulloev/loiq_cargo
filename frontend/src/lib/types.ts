@@ -37,7 +37,10 @@ export interface Warehouse {
   truck_volume_m3: string
   truck_weight_kg: string
   multiplier: string
+  address: string | null
 }
+
+export type TariffMode = 'per_kg' | 'per_m3'
 
 export interface CalcResponse {
   warehouse_id: number
@@ -47,7 +50,9 @@ export interface CalcResponse {
   density_kg_m3: string
   density_from: string
   density_to: string | null
+  mode: TariffMode
   rate_usd_per_kg: string
+  rate_usd_per_m3: string | null
   freight_usd: string
   freight_somoni: string
   exchange_rate: string
@@ -282,6 +287,7 @@ export interface WaybillGoodsRow {
   is_missing: boolean
   is_unclaimed: boolean
   received_at: string
+  dushanbe_note: string | null
 }
 
 export interface WaybillDetail {
@@ -376,7 +382,8 @@ export interface TariffRowFull {
   id: number
   density_from: string
   density_to: string | null
-  rate_usd_per_kg: string
+  rate_usd_per_kg: string | null
+  rate_usd_per_m3: string | null
 }
 
 export interface TariffFull {
@@ -394,7 +401,8 @@ export interface TariffFull {
 export interface TariffRowIn {
   density_from: number
   density_to: number | null
-  rate_usd_per_kg: number
+  rate_usd_per_kg: number | null
+  rate_usd_per_m3: number | null
 }
 
 export interface DebtRow {

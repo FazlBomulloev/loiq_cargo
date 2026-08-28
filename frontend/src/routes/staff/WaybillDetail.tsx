@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card } from '@/ui/Card'
 import { Button } from '@/ui/Button'
@@ -14,12 +14,18 @@ import {
 import { useToast } from '@/ui/Toast'
 import { cx } from '@/ui/utils'
 
+interface RowEdits {
+  volume_m3: string
+  note: string
+}
+
 export function StaffWaybillDetail() {
   const { id } = useParams<{ id: string }>()
   const shipmentId = Number(id)
   const [detail, setDetail] = useState<Detail | null>(null)
   const [loading, setLoading] = useState(true)
   const [checked, setChecked] = useState<Set<number>>(new Set())
+  const [edits, setEdits] = useState<Record<number, RowEdits>>({})
   const [confirming, setConfirming] = useState(false)
   const toast = useToast()
   const nav = useNavigate()
@@ -39,6 +45,14 @@ export function StaffWaybillDetail() {
             .map((g) => g.id)
         )
         setChecked(alreadyReceived)
+        const seed: Record<number, RowEdits> = {}
+        for (const g of d.goods) {
+          seed[g.id] = {
+            volume_m3: g.volume_m3,
+            note: g.dushanbe_note ?? '',
+          }
+        }
+        setEdits(seed)
       })
       .catch((e: unknown) => {
         if (cancelled) return
@@ -74,13 +88,51 @@ export function StaffWaybillDetail() {
 
   async function onConfirm() {
     if (!detail) return
+    const items: {
+      id: number
+      volume_m3?: number
+      note?: string | null
+    }[] = []
+    for (const gid of checked) {
+      const g = detail.goods.find((x) => x.id === gid)
+      if (!g) continue
+      const e = edits[gid]
+      if (!e) continue
+      const rawVol = e.volume_m3.trim()
+      const rawNote = e.note.trim()
+      const volumeChanged =
+        rawVol !== '' && Number(rawVol) !== Number(g.volume_m3)
+      const noteChanged = rawNote !== (g.dushanbe_note ?? '')
+      if (!volumeChanged && !noteChanged) continue
+      const item: {
+        id: number
+        volume_m3?: number
+        note?: string | null
+      } = { id: gid }
+      if (volumeChanged) {
+        const v = Number(rawVol)
+        if (!Number.isFinite(v) || v <= 0) {
+          toast.push({
+            kind: 'crit',
+            text: `товар #${gid}: объём должен быть > 0`,
+          })
+          return
+        }
+        item.volume_m3 = v
+      }
+      if (noteChanged) item.note = rawNote
+      items.push(item)
+    }
     setConfirming(true)
     try {
       const res = await api<ReceiveResponse>(
         `/dushanbe/waybills/${shipmentId}/receive`,
         {
           method: 'POST',
-          body: { received_ids: Array.from(checked) },
+          body: {
+            received_ids: Array.from(checked),
+            items,
+          },
         }
       )
       const suffix = res.missing_count > 0
@@ -234,76 +286,182 @@ export function StaffWaybillDetail() {
             <tbody>
               {detail.goods.map((g) => {
                 const isChecked = checked.has(g.id)
+                const e = edits[g.id] || {
+                  volume_m3: g.volume_m3,
+                  note: g.dushanbe_note ?? '',
+                }
+                const showEditor =
+                  isChecked && !alreadyArrived
                 return (
-                  <tr
-                    key={g.id}
-                    onClick={() => toggle(g.id)}
-                    className={cx(
-                      'border-b border-line-hair',
-                      !alreadyArrived && 'cursor-pointer',
-                      isChecked && 'bg-good-tint/30',
-                      !isChecked && !alreadyArrived &&
-                        'hover:bg-hover',
-                    )}
-                  >
-                    <td className="px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggle(g.id)}
-                        disabled={alreadyArrived}
-                        onClick={(e) => e.stopPropagation()}
-                        className="h-4 w-4 accent-accent"
-                      />
-                    </td>
-                    <td className="px-4 py-2">
-                      <span className={
-                        g.client_code
-                          ? 'text-accent-strong'
-                          : 'text-warn'
-                      }>
-                        {g.client_code || 'без клиента'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">
-                      {g.description || (
-                        <span className="text-ink-muted italic">
-                          без описания
+                  <Fragment key={g.id}>
+                    <tr
+                      onClick={() => toggle(g.id)}
+                      className={cx(
+                        'border-b border-line-hair',
+                        !alreadyArrived && 'cursor-pointer',
+                        isChecked && 'bg-good-tint/30',
+                        !isChecked && !alreadyArrived &&
+                          'hover:bg-hover',
+                      )}
+                    >
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggle(g.id)}
+                          disabled={alreadyArrived}
+                          onClick={(ev) => ev.stopPropagation()}
+                          className="h-4 w-4 accent-accent"
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={
+                          g.client_code
+                            ? 'text-accent-strong'
+                            : 'text-warn'
+                        }>
+                          {g.client_code || 'без клиента'}
                         </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-right
-                      font-mono-nums">
-                      {fmtKg(g.weight_kg)}
-                    </td>
-                    <td className="px-4 py-2 text-right
-                      font-mono-nums">
-                      {fmtM3(g.volume_m3)}
-                    </td>
-                    <td className="px-4 py-2 text-right
-                      font-mono-nums">
-                      {fmtDensity(g.density_kg_m3)}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {fmtDate(g.received_at)}
-                    </td>
-                    <td className="px-4 py-2">
-                      {g.status === 'in_dushanbe' && (
-                        <Pill variant="ok">в Душанбе</Pill>
-                      )}
-                      {g.status === 'delivered' && (
-                        <Pill variant="info">выдан</Pill>
-                      )}
-                      {g.status === 'in_transit' &&
-                        !isChecked && !alreadyArrived && (
-                          <Pill variant="warn">будет недост.</Pill>
+                      </td>
+                      <td className="px-4 py-2">
+                        {g.description || (
+                          <span className="text-ink-muted italic">
+                            без описания
+                          </span>
                         )}
-                      {g.status === 'in_transit' &&
-                        alreadyArrived && g.is_missing && (
-                          <Pill variant="crit">недостача</Pill>
+                      </td>
+                      <td className="px-4 py-2 text-right
+                        font-mono-nums">
+                        {fmtKg(g.weight_kg)}
+                      </td>
+                      <td className="px-4 py-2 text-right
+                        font-mono-nums">
+                        {fmtM3(g.volume_m3)}
+                      </td>
+                      <td className="px-4 py-2 text-right
+                        font-mono-nums">
+                        {fmtDensity(g.density_kg_m3)}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        {fmtDate(g.received_at)}
+                      </td>
+                      <td className="px-4 py-2">
+                        {g.status === 'in_dushanbe' && (
+                          <Pill variant="ok">в Душанбе</Pill>
                         )}
-                    </td>
-                  </tr>
+                        {g.status === 'delivered' && (
+                          <Pill variant="info">выдан</Pill>
+                        )}
+                        {g.status === 'in_transit' &&
+                          !isChecked && !alreadyArrived && (
+                            <Pill variant="warn">
+                              будет недост.
+                            </Pill>
+                          )}
+                        {g.status === 'in_transit' &&
+                          alreadyArrived && g.is_missing && (
+                            <Pill variant="crit">недостача</Pill>
+                          )}
+                      </td>
+                    </tr>
+                    {showEditor && (
+                      <tr
+                        className="border-b border-line-hair
+                          bg-good-tint/20"
+                        onClick={(ev) => ev.stopPropagation()}
+                      >
+                        <td></td>
+                        <td colSpan={7} className="px-4 py-3">
+                          <div className="grid gap-3
+                            sm:grid-cols-[160px_1fr]">
+                            <div>
+                              <label className="label-caps mb-1
+                                block">
+                                Факт. объём
+                              </label>
+                              <div className="flex items-center
+                                gap-2">
+                                <input
+                                  value={e.volume_m3}
+                                  onChange={(ev) =>
+                                    setEdits((p) => ({
+                                      ...p,
+                                      [g.id]: {
+                                        ...(p[g.id] ?? {
+                                          volume_m3: g.volume_m3,
+                                          note:
+                                            g.dushanbe_note ?? '',
+                                        }),
+                                        volume_m3: ev.target.value,
+                                      },
+                                    }))
+                                  }
+                                  inputMode="decimal"
+                                  className="w-full h-9 rounded-md
+                                    border border-line bg-input
+                                    px-2 font-mono-nums
+                                    text-right"
+                                />
+                                <span className="text-xs
+                                  text-ink-muted">м³</span>
+                              </div>
+                              <div className="text-2xs
+                                text-ink-muted mt-1">
+                                исходно {fmtM3(g.volume_m3)}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="label-caps mb-1
+                                block">
+                                Комментарий
+                              </label>
+                              <textarea
+                                value={e.note}
+                                onChange={(ev) =>
+                                  setEdits((p) => ({
+                                    ...p,
+                                    [g.id]: {
+                                      ...(p[g.id] ?? {
+                                        volume_m3: g.volume_m3,
+                                        note:
+                                          g.dushanbe_note ?? '',
+                                      }),
+                                      note: ev.target.value,
+                                    },
+                                  }))
+                                }
+                                rows={2}
+                                placeholder="повреждения,
+                                  особенности,
+                                  пересчёт и т.п."
+                                className="w-full rounded-md
+                                  border border-line bg-input
+                                  px-3 py-2 text-sm
+                                  focus:outline-none
+                                  focus:shadow-focus"
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {alreadyArrived && g.dushanbe_note && (
+                      <tr
+                        className="border-b border-line-hair
+                          bg-elev"
+                      >
+                        <td></td>
+                        <td colSpan={7}
+                          className="px-4 py-2 text-xs
+                            text-ink-secondary">
+                          <span className="label-caps mr-2">
+                            Приёмка
+                          </span>
+                          {g.dushanbe_note}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 )
               })}
             </tbody>

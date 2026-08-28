@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class TariffRowIn(BaseModel):
@@ -9,14 +9,35 @@ class TariffRowIn(BaseModel):
     density_to: Decimal | None = Field(
         default=None, gt=0, decimal_places=2
     )
-    rate_usd_per_kg: Decimal = Field(gt=0, decimal_places=4)
+    rate_usd_per_kg: Decimal | None = Field(
+        default=None, gt=0, decimal_places=4
+    )
+    rate_usd_per_m3: Decimal | None = Field(
+        default=None, gt=0, decimal_places=4
+    )
+
+    @model_validator(mode="after")
+    def _one_rate(self) -> "TariffRowIn":
+        kg = self.rate_usd_per_kg
+        m3 = self.rate_usd_per_m3
+        if kg is None and m3 is None:
+            raise ValueError(
+                "нужно указать ставку: rate_usd_per_kg "
+                "или rate_usd_per_m3"
+            )
+        if kg is not None and m3 is not None:
+            raise ValueError(
+                "в одной строке нельзя задать сразу $/кг и $/м³"
+            )
+        return self
 
 
 class TariffRowFull(BaseModel):
     id: int
     density_from: Decimal
     density_to: Decimal | None
-    rate_usd_per_kg: Decimal
+    rate_usd_per_kg: Decimal | None
+    rate_usd_per_m3: Decimal | None
 
 
 class TariffIn(BaseModel):

@@ -37,6 +37,9 @@ class Warehouse(IdMixin, TimestampsMixin, Base):
     multiplier: Mapped[Decimal] = mapped_column(
         Numeric(6, 3), nullable=False, default=Decimal("1.000")
     )
+    address: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )
 
     users: Mapped[list["User"]] = relationship(
         back_populates="warehouse"

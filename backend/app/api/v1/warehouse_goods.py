@@ -146,8 +146,11 @@ async def receive_goods(
             status_code=status.HTTP_409_CONFLICT,
             detail="не нашли ставку для плотности",
         )
-    freight_usd = (row.rate_usd_per_kg * body.weight_kg).quantize(
-        Decimal("0.01"), rounding=ROUND_HALF_UP
+    freight_usd = tariff_svc.compute_freight_usd(
+        row, body.weight_kg, body.volume_m3
+    )
+    effective_rate_kg = tariff_svc.effective_rate_per_kg(
+        row, body.weight_kg, body.volume_m3
     )
     rate = await settings_service.get_exchange_rate(session)
     freight_somoni = (freight_usd * rate).quantize(
@@ -165,7 +168,7 @@ async def receive_goods(
         weight_kg=body.weight_kg,
         volume_m3=body.volume_m3,
         density_kg_m3=density,
-        rate_usd_per_kg=row.rate_usd_per_kg,
+        rate_usd_per_kg=effective_rate_kg,
         freight_cost_usd=freight_usd,
         status=GoodsStatus.IN_CHINA,
         is_unclaimed=is_unclaimed,

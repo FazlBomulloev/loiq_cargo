@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.models import Warehouse
-from app.schemas.warehouse import TariffOut, TariffRowOut, WarehouseOut
+from app.schemas.warehouse import (
+    TariffOut,
+    TariffRowOut,
+    WarehouseOut,
+)
 from app.services import tariff as tariff_svc
 
 router = APIRouter(prefix="/warehouses", tags=["warehouses"])
@@ -50,3 +54,5 @@ async def active_tariff(
         effective_from=tariff.effective_from.isoformat(),
         rows=[TariffRowOut.model_validate(r) for r in tariff.rows],
     )
+
+

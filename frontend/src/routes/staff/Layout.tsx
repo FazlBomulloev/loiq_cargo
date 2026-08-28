@@ -117,19 +117,21 @@ export function StaffLayout({
   return (
     <div className="min-h-screen bg-app text-ink-primary">
       <header className="border-b border-line bg-elev">
-        <div className="mx-auto max-w-6xl px-6 h-14
-          flex items-center justify-between">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2
+          flex flex-wrap items-center justify-between gap-y-2
+          gap-x-4 min-h-14">
           <Link to="/staff" className="flex items-center gap-2
             no-underline">
             <span className="font-serif text-xl font-semibold
               text-ink-primary">
               Loik
             </span>
-            <span className="label-caps">
+            <span className="label-caps hidden xs:inline">
               {ROLE_LABEL[me.role] ?? me.role}
             </span>
           </Link>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6
+            flex-wrap justify-end">
             {activeWarehouse && (
               <div className="text-right">
                 <div className="label-caps">Склад</div>
@@ -138,9 +140,12 @@ export function StaffLayout({
                 </div>
               </div>
             )}
-            <div className="text-right">
-              <div className="text-sm">{me.full_name}</div>
-              <div className="text-xs text-ink-muted">
+            <div className="text-right hidden sm:block">
+              <div className="text-sm truncate max-w-[16ch]">
+                {me.full_name}
+              </div>
+              <div className="text-xs text-ink-muted truncate
+                max-w-[22ch]">
                 {me.email}
               </div>
             </div>
@@ -153,8 +158,11 @@ export function StaffLayout({
             </button>
           </div>
         </div>
-        <nav className="mx-auto max-w-6xl px-6 flex gap-6
-          border-t border-line-hair">
+        <nav className="mx-auto max-w-6xl px-4 sm:px-6
+          flex gap-4 sm:gap-6 border-t border-line-hair
+          overflow-x-auto whitespace-nowrap
+          [-ms-overflow-style:none] [scrollbar-width:none]
+          [&::-webkit-scrollbar]:hidden">
           {NAV.filter((n) =>
             n.roles.includes(
               me.role as 'china_staff' | 'dushanbe_staff' | 'owner'
@@ -165,7 +173,7 @@ export function StaffLayout({
               to={n.to}
               end={n.end}
               className={({ isActive }) => cx(
-                'py-3 text-sm no-underline',
+                'py-3 text-sm no-underline shrink-0',
                 'border-b-2 -mb-px',
                 isActive
                   ? 'border-accent text-ink-primary ' +
@@ -179,7 +187,8 @@ export function StaffLayout({
           ))}
         </nav>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-6
+        sm:py-8">
         {children}
       </main>
     </div>
