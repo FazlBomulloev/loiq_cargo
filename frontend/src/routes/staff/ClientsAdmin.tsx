@@ -109,7 +109,7 @@ export function ClientsAdmin({ me }: Props) {
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-3
           px-4 py-3 border-b border-line-hair">
-          <div className="flex gap-2 flex-1">
+          <div className="flex flex-wrap gap-2 flex-1">
             {(Object.keys(FILTER_LABEL) as Filter[]).map((f) => (
               <Chip
                 key={f}
@@ -120,7 +120,7 @@ export function ClientsAdmin({ me }: Props) {
               </Chip>
             ))}
           </div>
-          <div className="w-72">
+          <div className="w-full sm:w-72">
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}

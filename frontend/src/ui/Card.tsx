@@ -23,9 +23,9 @@ export function Card({
     >
       {(title || actions) && (
         <header
-          className="flex items-center justify-between
-            gap-4 border-b border-line-hair
-            px-6 py-4"
+          className="flex flex-wrap items-center justify-between
+            gap-x-4 gap-y-2 border-b border-line-hair
+            px-4 sm:px-6 py-3 sm:py-4"
         >
           <h3 className="text-lg font-semibold text-ink-primary">
             {title}
@@ -33,10 +33,11 @@ export function Card({
           {actions}
         </header>
       )}
-      <div className={cx(padded && 'p-6')}>{children}</div>
+      <div className={cx(padded && 'p-4 sm:p-6')}>{children}</div>
       {footer && (
         <footer
-          className="border-t border-line-hair px-6 py-4"
+          className="border-t border-line-hair
+            px-4 sm:px-6 py-3 sm:py-4"
         >
           {footer}
         </footer>

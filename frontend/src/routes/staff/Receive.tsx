@@ -338,7 +338,8 @@ export function StaffReceive({
             </div>
           )}
 
-          <div className="flex items-center justify-between
+          <div className="flex flex-wrap items-center
+            justify-between gap-3
             border-t border-line-hair pt-4">
             <button
               type="button"

@@ -303,7 +303,8 @@ export function StaffSettings({ me, warehouses }: Props) {
                   </div>
                 </Card>
               ))}
-              <div className="flex items-center justify-between
+              <div className="flex flex-wrap items-center
+                justify-between gap-3
                 border-t border-line-hair pt-4">
                 <div className="text-sm text-ink-muted">
                   {dirtyKeys.size > 0

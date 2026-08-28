@@ -175,7 +175,8 @@ export function StaffWaybillDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between
+        gap-4">
         <div>
           <button
             onClick={() => nav('/staff/waybills')}
@@ -227,7 +228,7 @@ export function StaffWaybillDetail() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <Metric label="Товаров"
           value={`${detail.goods.length} шт`} />
         <Metric label="Вес" value={fmtKg(detail.total_weight_kg)} />
@@ -237,7 +238,7 @@ export function StaffWaybillDetail() {
       </div>
 
       {!alreadyArrived && (
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           <button
             onClick={() => toggleAll(true)}
             className="text-accent hover:text-accent-strong"

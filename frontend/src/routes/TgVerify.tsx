@@ -92,8 +92,8 @@ export default function TgVerify() {
         </p>
 
         <Card>
-          <div className="flex items-center justify-between
-            mb-6 gap-4">
+          <div className="flex flex-wrap items-center
+            justify-between mb-6 gap-4">
             <div>
               <div className="label-caps">Код клиента</div>
               <div className="font-mono-nums text-3xl
@@ -145,12 +145,13 @@ export default function TgVerify() {
 
           {showQr && (
             <div className="rounded-md border border-line
-              bg-card p-5 mb-6 flex gap-4 items-start">
+              bg-card p-4 sm:p-5 mb-6 flex flex-wrap sm:flex-nowrap
+              gap-4 items-start">
               <img
                 src={QR_SRC(payload.telegram_deep_link)}
                 alt="QR"
                 className="rounded-md border border-line
-                  bg-white p-2 shrink-0"
+                  bg-white p-2 shrink-0 mx-auto sm:mx-0"
                 width={200}
                 height={200}
               />
@@ -170,7 +171,8 @@ export default function TgVerify() {
             </div>
           )}
 
-          <div className="flex justify-between items-center
+          <div className="flex flex-wrap justify-between
+            items-center gap-3
             border-t border-line-hair pt-6">
             <button
               onClick={cancel}

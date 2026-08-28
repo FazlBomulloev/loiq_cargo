@@ -50,7 +50,7 @@ export function GoodsDrawer({ item, onClose }: Props) {
         role="dialog"
         aria-modal
       >
-        <div className="p-6 border-b border-line-hair
+        <div className="p-4 sm:p-6 border-b border-line-hair
           flex items-start justify-between gap-4">
           <div>
             <h2 className="font-serif text-xl font-semibold">
@@ -72,7 +72,7 @@ export function GoodsDrawer({ item, onClose }: Props) {
           </button>
         </div>
 
-        <section className="p-6 border-b border-line-hair">
+        <section className="p-4 sm:p-6 border-b border-line-hair">
           <div className="label-caps mb-3">Маршрут</div>
           <ol className="space-y-2">
             {STEPS.map((s, i) => (
@@ -97,7 +97,7 @@ export function GoodsDrawer({ item, onClose }: Props) {
           </ol>
         </section>
 
-        <section className="p-6 border-b border-line-hair">
+        <section className="p-4 sm:p-6 border-b border-line-hair">
           <div className="label-caps mb-3">Статус</div>
           <div className="flex flex-wrap gap-2">
             <Pill variant={statusVariant(item.status)}>
@@ -133,7 +133,7 @@ export function GoodsDrawer({ item, onClose }: Props) {
           )}
         </section>
 
-        <section className="p-6">
+        <section className="p-4 sm:p-6">
           <div className="label-caps mb-3">Стоимость</div>
           <dl className="space-y-2 text-sm">
             <MoneyRow

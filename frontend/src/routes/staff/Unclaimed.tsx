@@ -286,7 +286,7 @@ function ConfirmDeleteDialog({
         role="dialog"
         aria-modal
         className="w-full max-w-md bg-card border border-line
-          rounded-md shadow-pop p-6 space-y-4"
+          rounded-md shadow-pop p-4 sm:p-6 space-y-4"
       >
         <div>
           <div className="label-caps">Удалить товар</div>
@@ -418,8 +418,9 @@ function BindDrawer({
         className="w-full max-w-lg bg-card border-l border-line
           overflow-y-auto"
       >
-        <div className="p-6 space-y-5">
-          <div className="flex items-start justify-between">
+        <div className="p-4 sm:p-6 space-y-5">
+          <div className="flex flex-wrap items-start
+            justify-between gap-3">
             <div>
               <div className="label-caps">Товар</div>
               <h2 className="font-serif text-xl font-semibold
