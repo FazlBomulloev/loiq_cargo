@@ -46,12 +46,12 @@ export default function StaffLogin() {
         <Card>
           <form onSubmit={onSubmit} className="grid gap-4">
             <Input
-              label="Email"
-              type="email"
+              label="Логин"
+              type="text"
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              autoComplete="username"
             />
             <Input
               label="Пароль"

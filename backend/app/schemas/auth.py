@@ -1,10 +1,10 @@
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class StaffLoginRequest(BaseModel):
-    email: EmailStr
+    email: str = Field(min_length=1)
     password: str = Field(min_length=1)
 
 
@@ -22,7 +22,7 @@ class TokenResponse(BaseModel):
 
 class StaffMe(BaseModel):
     id: int
-    email: EmailStr
+    email: str
     full_name: str
     role: str
     warehouse_id: int | None
